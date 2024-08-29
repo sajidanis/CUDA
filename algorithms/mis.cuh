@@ -8,6 +8,8 @@
 #include <iostream>
 #include <vector>
 
+#include "cudaError.cuh"
+
 #define BLOCKSIZE 256
 
 __global__ void assignRandomLabels(float *labels, int numNodes, unsigned int seed) {
@@ -48,11 +50,14 @@ void Maximal_Independent_Set(thrust::device_vector<int> &rowPtr, thrust::device_
 
     // Step 4-5: Assign random labels to each vertex
     assignRandomLabels<<<blocksPerGrid, BLOCKSIZE>>>(thrust::raw_pointer_cast(d_labels.data()), numNodes, time(0));
-    cudaDeviceSynchronize();
+    CUDA_KERNEL_CHECK();
+    CUDA_CALL(cudaDeviceSynchronize());
 
     // Step 10-23: Find MIS based on labels using CSR format
     findMIS<<<blocksPerGrid, BLOCKSIZE>>>(thrust::raw_pointer_cast(rowPtr.data()), thrust::raw_pointer_cast(colInd.data()), thrust::raw_pointer_cast(d_labels.data()), thrust::raw_pointer_cast(d_MIS.data()), numNodes);
-    cudaDeviceSynchronize();
+    CUDA_KERNEL_CHECK();
+    
+    CUDA_CALL(cudaDeviceSynchronize());
 }
 
 // int main() {

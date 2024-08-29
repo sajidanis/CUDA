@@ -7,11 +7,13 @@ set(CMAKE_CUDA_STANDARD 17)
 
 include_directories(${CMAKE_SOURCE_DIR}/reader)
 include_directories(${CMAKE_SOURCE_DIR}/algorithms)
+include_directories(${CMAKE_SOURCE_DIR}/utils)
 
 add_executable(ParallelGraph 
         main.cu
         reader/marketReader.cuh
         algorithms/mis.cuh
+        utils/cudaError.cuh
 )
 
 set_target_properties(ParallelGraph PROPERTIES
