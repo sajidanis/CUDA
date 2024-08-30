@@ -80,6 +80,7 @@ __global__ void updateU(int* U, int* nextU, int numVertices) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < numVertices) {
         U[idx] = nextU[idx];
+        nextU[idx] = 0;
     }
 }
 
