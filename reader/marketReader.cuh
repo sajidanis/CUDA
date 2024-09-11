@@ -99,13 +99,13 @@ void ReadMarketStream(std::string fileName, COO_t &cooT){
 
 	if(undirected) edges *= 2;
 
+    std::cout << nodes << " " << edges << "\n";
+
     cooT.nodes = nodes;
     cooT.edges = edges;
-	cooT.src.reserve(edges);
-	cooT.dest.reserve(edges);
+	
     cooT.indegree.assign(nodes+1, 0);
     cooT.outdegree.assign(nodes+1, 0);
-	cooT.wt.reserve(edges);
 
 	while(std::getline(infile, line)) {
 		std::stringstream ss(line);
@@ -126,13 +126,14 @@ void ReadMarketStream(std::string fileName, COO_t &cooT){
 
 		if(undirected and u != v){
 			cooT.src.push_back(v);
-			cooT.src.push_back(u);
+			cooT.dest.push_back(u);
             cooT.wt.push_back(w);
             cooT.indegree[u]++;
             cooT.outdegree[v]++;
 		}
     }
     infile.close();
+
     const auto end = std::chrono::high_resolution_clock::now();
     long double diff = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     diff *= 1e-6;
@@ -160,6 +161,16 @@ void COO_to_CSR(COO_t &cooT, CSR_t &csrT){
 
     // csrT.d_offsets = thrust::raw_pointer_cast(d_offset.data());
     
+    // thrust::host_vector<int> sorted_dest(d_sorted_dest);
+    // std::cout << "\nSrc - " << cooT.src.size() << "\n";
+    // for(auto &el : cooT.src){
+    //     std::cout << el << " ";
+    // }
+    // std::cout << "\n\nDest - " << cooT.dest.size() << "\n";
+    // for(auto &el : cooT.dest){
+    //     std::cout << el << " ";
+    // }
+    // std::cout << "\n\n";
 
     // Create the adjcency list by sorting the datas as we can have edgevalues so need to get the keys and then sort it accordingly
 
@@ -169,10 +180,10 @@ void COO_to_CSR(COO_t &cooT, CSR_t &csrT){
     
     // Step 1: Create an index vector and initialize it using thrust::sequence
     thrust::device_vector<int> d_indices(d_src.size());
-    thrust::sequence(thrust::cuda::par_nosync, d_indices.begin(), d_indices.end());
+    thrust::sequence(d_indices.begin(), d_indices.end());
 
     // Step 2: Sort the indices based on the src vector using thrust::sort_by_key
-    thrust::sort_by_key(thrust::cuda::par_nosync, d_src.begin(), d_src.end(), d_indices.begin());
+    thrust::sort_by_key(d_src.begin(), d_src.end(), d_indices.begin());
 
     // Step 3: Use thrust::gather to reorder each iterator asynchronously based on the sorted indices
     thrust::device_vector<int> d_sorted_src(d_src.size());
@@ -180,9 +191,9 @@ void COO_to_CSR(COO_t &cooT, CSR_t &csrT){
     thrust::device_vector<float> d_sorted_edgeValues(d_edgeValues.size());
 
     // Reorder src, dest, and edgeValues using the sorted indices
-    thrust::gather(thrust::cuda::par_nosync, d_indices.begin(), d_indices.end(), d_src.begin(), d_sorted_src.begin());
-    thrust::gather(thrust::cuda::par_nosync, d_indices.begin(), d_indices.end(), d_dest.begin(), d_sorted_dest.begin());
-    thrust::gather(thrust::cuda::par_nosync, d_indices.begin(), d_indices.end(), d_edgeValues.begin(), d_sorted_edgeValues.begin());
+    thrust::gather(d_indices.begin(), d_indices.end(), d_src.begin(), d_sorted_src.begin());
+    thrust::gather(d_indices.begin(), d_indices.end(), d_dest.begin(), d_sorted_dest.begin());
+    thrust::gather(d_indices.begin(), d_indices.end(), d_edgeValues.begin(), d_sorted_edgeValues.begin());
 
     // Copy the device vector to host vector
     // thrust::host_vector<int> h_columnIndices = d_sorted_dest;

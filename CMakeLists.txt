@@ -13,6 +13,7 @@ add_executable(ParallelGraph
         main.cu
         reader/marketReader.cuh
         algorithms/mis.cuh
+        algorithms/scc.cuh
         utils/cudaError.cuh
 )
 

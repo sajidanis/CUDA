@@ -28,6 +28,16 @@ int main(int argc, char **argv){
     thrust::device_vector<int> d_offsets(csr.offsets);
     thrust::device_vector<int> d_colIndices(csr.columnIndices);
 
+    for(auto &el : csr.offsets){
+        cout << el << ", ";
+    }
+    cout << "\n";
+
+    for(auto &el : csr.columnIndices){
+        cout << el << ",";
+    }
+    cout << "\n";
+
     // thrust::device_vector<int> d_MIS(numNodes, -1);
     // Maximal_Independent_Set(d_offsets, d_colIndices, numNodes, d_MIS);
     // thrust::host_vector<int> h_MIS = d_MIS; // copy the vector to host
