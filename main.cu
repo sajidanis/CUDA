@@ -5,6 +5,7 @@
 #include "marketReader.cuh"
 #include "mis.cuh"
 #include "scc.cuh"
+#include "aggregate_pr.cuh"
 
 using namespace std;
 
@@ -22,21 +23,25 @@ int main(int argc, char **argv){
     ReadMarketStream(filename, coo);
     COO_to_CSR(coo, csr);
 
-    size_t numNodes = csr.nodes;
+    // // size_t numNodes = csr.nodes;
     // size_t numEdges = csr.edges;
 
-    thrust::device_vector<int> d_offsets(csr.offsets);
-    thrust::device_vector<int> d_colIndices(csr.columnIndices);
+    // Dynamic Page rank
+    CSRGraph h_graph;
+    h_graph.row_ptr = csr.offsets;
+    h_graph.col_idx = csr.columnIndices;
+    h_graph.num_edges = csr.edges;
+    h_graph.num_nodes = csr.nodes;
 
-    for(auto &el : csr.offsets){
-        cout << el << ", ";
-    }
-    cout << "\n";
+    test_pr_dynamic(h_graph, 30);
 
-    for(auto &el : csr.columnIndices){
-        cout << el << ",";
-    }
-    cout << "\n";
+    // thrust::device_vector<int> d_offsets(csr.offsets);
+    // thrust::device_vector<int> d_colIndices(csr.columnIndices);
+
+
+
+
+    
 
     // thrust::device_vector<int> d_MIS(numNodes, -1);
     // Maximal_Independent_Set(d_offsets, d_colIndices, numNodes, d_MIS);
@@ -51,20 +56,20 @@ int main(int argc, char **argv){
     // }
     // std::cout << std::endl;
 
-    thrust::device_vector<int> d_P(numNodes, 1); // Initial vertex set P is the entire graph
-    thrust::device_vector<int> StrongCompSet(numNodes, 0); // Store the strongly connected components
+    // thrust::device_vector<int> d_P(numNodes, 1); // Initial vertex set P is the entire graph
+    // thrust::device_vector<int> StrongCompSet(numNodes, 0); // Store the strongly connected components
 
-    Parallel_SCC_CSR(d_offsets, d_colIndices, d_P, StrongCompSet, numNodes);
+    // Parallel_SCC_CSR(d_offsets, d_colIndices, d_P, StrongCompSet, numNodes);
 
-    thrust::host_vector<int> h_StrongCompSet = StrongCompSet;
+    // thrust::host_vector<int> h_StrongCompSet = StrongCompSet;
 
-    std::cout << "Strongly Connected Components: ";
-    for (int i = 0; i < numNodes; ++i) {
-        if (h_StrongCompSet[i] == 1) {
-            std::cout << i << " ";
-        }
-    }
-    std::cout << std::endl;
+    // std::cout << "Strongly Connected Components: ";
+    // for (int i = 0; i < numNodes; ++i) {
+    //     if (h_StrongCompSet[i] == 1) {
+    //         std::cout << i << " ";
+    //     }
+    // }
+    // std::cout << std::endl;
 
     cudaDeviceSynchronize();
     return 0;

@@ -148,6 +148,7 @@ void COO_to_CSR(COO_t &cooT, CSR_t &csrT){
     size_t numNodes = cooT.nodes;
     size_t numEdges = cooT.edges;
     csrT.nodes = numNodes;
+    csrT.edges = numEdges;
 
     // Creating the offset from the outdegree gained at the reading time
     auto data = offsets.data();
