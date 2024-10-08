@@ -1,0 +1,33 @@
+
+[+] Available device Id is : 0 with available memory : 3983 MB
+
+[+] Setting the GPU 0
+Device Name: NVIDIA GeForce GTX 1050 Ti
+CUDA Capability: 6.1
+Total Global Memory: 4034 MB
+Shared Memory per Block: 48 KB
+Total Constant Memory: 64 KB
+Multiprocessor Count: 6
+Max Threads per Block: 1024
+Max Threads Dimension (x, y, z): (1024, 1024, 64)
+Max Grid Size (x, y, z): (2147483647, 65535, 65535)
+Clock Rate: 1620 MHz
+Memory Clock Rate: 3504 MHz
+Memory Bus Width: 128 bits
+L2 Cache Size: 1024 KB
+Texture Alignment: 512 bytes
+Surface Alignment: 32 bytes
+Unified Addressing: Yes
+Max Concurrent Kernels: 1
+Free Memory: 3983 MB
+Total Memory: 4034 MB
+
+[+] Reading the market file :../graphs/hugetrace-00020.mtx
+16002413 47997626
+[+] Time taken to read the market file : 13468.6 ms
+[+] Time taken to convert the coo format to csr : 703.692 ms
+
+[+] BFS -> 
+
+Copy Time : 47.8442 ms
+Running Time : 9996.07 ms

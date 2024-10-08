@@ -67,9 +67,9 @@ __global__ void accumulateBC(int* BC, int* sigma, int* distance, int* Stack_Arra
 }
 
 // Function to calculate betweenness centrality using parallel BFS and dependency accumulation
-void betweennessCentrality(int* csrRowPtr, int* csrColIdx, int V) {
+void betweennessCentrality(int* csrRowPtr, int* csrColIdx, int V, int E) {
     // Allocate memory on device
-    int *d_BC, *d_distance, *d_sigma, *d_Stack_Array, *d_predecessor;
+    int *d_BC, *d_distance, *d_sigma, *d_Stack_Array, *d_predecessor, *d_csrRowPtr, *d_csrColIdx;
     float *d_delta;
     cudaMalloc(&d_BC, V * sizeof(int));
     cudaMalloc(&d_distance, V * sizeof(int));
@@ -77,6 +77,12 @@ void betweennessCentrality(int* csrRowPtr, int* csrColIdx, int V) {
     cudaMalloc(&d_Stack_Array, V * sizeof(int));
     cudaMalloc(&d_predecessor, V * sizeof(int));
     cudaMalloc(&d_delta, V * sizeof(float));
+    cudaMalloc(&d_csrColIdx, E * sizeof(int));
+    cudaMalloc(&d_csrRowPtr, (V+1) * sizeof(int));
+
+    //Transfer the host csr data to gpu device
+    cudaMemcpy(d_csrRowPtr, csrRowPtr, (V+1) * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_csrColIdx, csrColIdx, (E)* sizeof(int), cudaMemcpyHostToDevice);
 
     // Initialize BC and other arrays
     int threadsPerBlock = 256;
@@ -97,7 +103,7 @@ void betweennessCentrality(int* csrRowPtr, int* csrColIdx, int V) {
             cudaMalloc(&d_count, sizeof(int));
             cudaMemcpy(d_count, &count, sizeof(int), cudaMemcpyHostToDevice);
 
-            bfsKernel<<<blocksPerGrid, threadsPerBlock>>>(d_distance, d_sigma, d_Stack_Array, csrRowPtr, csrColIdx, V, level, d_count);
+            bfsKernel<<<blocksPerGrid, threadsPerBlock>>>(d_distance, d_sigma, d_Stack_Array, d_csrRowPtr, d_csrColIdx, V, level, d_count);
             cudaMemcpy(&count, d_count, sizeof(int), cudaMemcpyDeviceToHost);
             cudaFree(d_count);
 
@@ -125,19 +131,7 @@ void betweennessCentrality(int* csrRowPtr, int* csrColIdx, int V) {
 
     // Output results (for testing)
     for (int i = 0; i < V; i++) {
-        printf("BC[%d] = %d\n", i, h_BC[i]);
+        printf("%d ", h_BC[i]);
     }
     free(h_BC);
-}
-
-int main() {
-    // Example graph in CSR format
-    int V = 5; // Number of vertices
-    int csrRowPtr[] = {0, 2, 5, 7, 9, 10};
-    int csrColIdx[] = {1, 2, 0, 2, 3, 0, 4, 1, 3, 2};
-
-    // Calculate betweenness centrality
-    betweennessCentrality(csrRowPtr, csrColIdx, V);
-
-    return 0;
 }

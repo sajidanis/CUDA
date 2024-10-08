@@ -1,3 +1,6 @@
+#ifndef AGGREGATE_PR_CUH
+#define AGGREGATE_PR_CUH
+
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <iostream>
@@ -10,6 +13,8 @@
 #include <thrust/functional.h>
 
 #define BLOCK_SIZE 256
+#define MAX_ITER 32
+#define DAMPING_FACTOR 0.85f
 
 #define cudaCheckError() {                                 \
     cudaError_t e = cudaGetLastError();                    \
@@ -29,8 +34,7 @@
 
 // Constants
 
-const int MAX_ITER = 100;
-const float DAMPING_FACTOR = 0.85f;
+
 // const float EPSILON = 1e-6f;
 
 // CSR format structure
@@ -238,15 +242,19 @@ thrust::host_vector<float> run_pr_update(CSRGraph &h_graph, d_CSRGraph &d_graph,
         // Perform PageRank update only for affected nodes
         int num_affected = affected_nodes.size();
         int affectedBlocks = (num_affected + BLOCK_SIZE - 1) / BLOCK_SIZE;
-        pagerank_update_dynamic<<<affectedBlocks, BLOCK_SIZE>>>(d_graph, 
-            thrust::raw_pointer_cast(d_pagerank.data()), 
-            thrust::raw_pointer_cast(d_new_pagerank.data()), 
-            thrust::raw_pointer_cast(d_affected_nodes.data()), 
-            num_affected, DAMPING_FACTOR);
-        cudaDeviceSynchronize();
-        cudaCheckError();
-        // Swap PageRank arrays after the dynamic update
-        d_pagerank.swap(d_new_pagerank);
+
+        for (int iter = 0; iter < MAX_ITER / 4; ++iter) {
+
+            pagerank_update_dynamic<<<affectedBlocks, BLOCK_SIZE>>>(d_graph, 
+                thrust::raw_pointer_cast(d_pagerank.data()), 
+                thrust::raw_pointer_cast(d_new_pagerank.data()), 
+                thrust::raw_pointer_cast(d_affected_nodes.data()), 
+                num_affected, DAMPING_FACTOR);
+            cudaDeviceSynchronize();
+            cudaCheckError();
+            // Swap PageRank arrays after the dynamic update
+            d_pagerank.swap(d_new_pagerank);
+        }
     }
 
     // Copy final PageRank values back to host
@@ -408,3 +416,6 @@ void test_pr_dynamic(CSRGraph &graph, int n){
 
 //     return 0;
 // }
+
+
+#endif

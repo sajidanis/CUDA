@@ -14,7 +14,11 @@ add_executable(ParallelGraph
         reader/marketReader.cuh
         algorithms/mis.cuh
         algorithms/scc.cuh
+        algorithms/bfs.cuh
+        algorithms/color.cuh
+        algorithms/pagerank.cuh
         utils/cudaError.cuh
+        utils/gpu.cuh
 )
 
 set_target_properties(ParallelGraph PROPERTIES

@@ -1,0 +1,18 @@
+
+[+] Available device Id is : 0 with available memory : 3983 MB
+
+[+] Setting the GPU 0
+
+[+] Reading the market file :../graphs/inf-europe_osm.mtx
+50912018 108109320
+[+] Time taken to read the market file : 28091.6 ms
+[+] Time taken to convert the coo format to csr : 1592.32 ms
+
+
+
+Copy Time : 74.2628 ms
+Init Time : 3218.15 ms
+Sync Time : 94.8807 ms
+Dyn Update Time : 108.353 ms
+Static Update Time : 3212.41 ms
+Mean Absolute Error (MAE): 1.96417e-08

@@ -1,0 +1,17 @@
+
+[+] Available device Id is : 0 with available memory : 3983 MB
+
+[+] Setting the GPU 0
+
+[+] Reading the market file :../graphs/bio-pdb1HYS.mtx
+36417 4381182
+[+] Time taken to read the market file : 1711.01 ms
+[+] Time taken to convert the coo format to csr : 53.4427 ms
+
+
+Copy Time : 2.08843 ms
+Init Time : 217.471 ms
+Sync Time : 2.54744 ms
+Dyn Update Time : 0.38015 ms
+Static Update Time : 216.906 ms
+Mean Absolute Error (MAE): 2.74148e-05

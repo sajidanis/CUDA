@@ -43,10 +43,26 @@ __global__ void findMIS(int *rowPtr, int *colInd, float *labels, int *d_MIS, int
     }
 }
 
-void Maximal_Independent_Set(thrust::device_vector<int> &rowPtr, thrust::device_vector<int> &colInd, int numNodes, thrust::device_vector<int> &d_MIS) {
+void Maximal_Independent_Set(std::vector<int> &rowPtr, std::vector<int> &colInd, int numNodes) {
+
+    // thrust::host_vector<int> h_rowPtr = rowPtr;
+    // thrust::host_vector<int> h_colInd = colInd;
+
+    auto start = std::chrono::high_resolution_clock::now(); // for timing
+
+    thrust::device_vector<int> d_rowPtr = rowPtr;
+    thrust::device_vector<int> d_colInd = colInd;
+    thrust::device_vector<int> d_MIS(numNodes, -1);
     thrust::device_vector<float> d_labels(numNodes);
     
     int blocksPerGrid = (numNodes + BLOCKSIZE - 1) / BLOCKSIZE;
+
+    auto end = std::chrono::high_resolution_clock::now();
+    
+    long double copy_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    copy_time *= 1e-6;
+
+    start = std::chrono::high_resolution_clock::now();
 
     // Step 4-5: Assign random labels to each vertex
     assignRandomLabels<<<blocksPerGrid, BLOCKSIZE>>>(thrust::raw_pointer_cast(d_labels.data()), numNodes, time(0));
@@ -54,10 +70,34 @@ void Maximal_Independent_Set(thrust::device_vector<int> &rowPtr, thrust::device_
     CUDA_CALL(cudaDeviceSynchronize());
 
     // Step 10-23: Find MIS based on labels using CSR format
-    findMIS<<<blocksPerGrid, BLOCKSIZE>>>(thrust::raw_pointer_cast(rowPtr.data()), thrust::raw_pointer_cast(colInd.data()), thrust::raw_pointer_cast(d_labels.data()), thrust::raw_pointer_cast(d_MIS.data()), numNodes);
+    findMIS<<<blocksPerGrid, BLOCKSIZE>>>(thrust::raw_pointer_cast(d_rowPtr.data()), thrust::raw_pointer_cast(d_colInd.data()), thrust::raw_pointer_cast(d_labels.data()), thrust::raw_pointer_cast(d_MIS.data()), numNodes);
     CUDA_KERNEL_CHECK();
     
     CUDA_CALL(cudaDeviceSynchronize());
+
+    end = std::chrono::high_resolution_clock::now();
+
+    long double running_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    running_time *= 1e-6;
+
+    // thrust::host_vector<int> h_MIS = d_MIS;
+
+    // Print result
+    // int limits = min(numNodes, 40);
+    // std::cout << "Maximal Independent Set: ";
+    // for (int i = 0; i < limits; ++i) {
+    //     if (h_MIS[i] == 1) {
+    //         std::cout << i << " ";
+    //     }
+    // }
+    // std::cout << std::endl;
+
+    // Print Statistics
+    std::cout << "\n";
+    std::cout << "Copy Time : " << copy_time << " ms\n";
+    std::cout << "Running Time : " << running_time << " ms\n";
+    std::cout << "\n";
+
 }
 
 // int main() {

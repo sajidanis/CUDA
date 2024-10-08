@@ -1,3 +1,5 @@
+#ifndef SCC_CUH
+#define SCC_CUH
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
@@ -7,6 +9,7 @@
 #include <thrust/copy.h>
 #include <iostream>
 #include <vector>
+#include <chrono>
 
 #include "cudaError.cuh"
 
@@ -126,28 +129,48 @@ void Parallel_SCC_CSR(thrust::device_vector<int> &rowPtr, thrust::device_vector<
     Parallel_SCC_CSR(rowPtr, colInd, P_minus_Vfwd_Vbwd, StrongCompSet, numNodes);
 }
 
-// int main() {
-//     // Example graph
-//     int numNodes = 5;
-//     std::vector<int> h_rowPtr = {0, 2, 3, 5, 6, 8}; // CSR Row pointers
-//     std::vector<int> h_colInd = {1, 2, 3, 1, 4, 2, 0, 3}; // CSR Column indices
+ 
+void strongly_connected(std::vector<int> &rowPtr, std::vector<int> &colInd, size_t numNodes ){
+    
+    auto start = std::chrono::high_resolution_clock::now(); // for timing
 
-//     thrust::device_vector<int> d_rowPtr = h_rowPtr;
-//     thrust::device_vector<int> d_colInd = h_colInd;
-//     thrust::device_vector<int> d_P(numNodes, 1); // Initial vertex set P is the entire graph
-//     thrust::device_vector<int> StrongCompSet(numNodes, 0); // Store the strongly connected components
+    thrust::device_vector<int> d_P(numNodes, 1); // Initial vertex set P is the entire graph
+    thrust::device_vector<int> StrongCompSet(numNodes, 0); // Store the strongly connected components
 
-//     Parallel_SCC_CSR(d_rowPtr, d_colInd, d_P, StrongCompSet, numNodes);
+    thrust::device_vector<int> d_rowPtr = rowPtr;
+    thrust::device_vector<int> d_colInd = colInd;
 
-//     thrust::host_vector<int> h_StrongCompSet = StrongCompSet;
+    auto end = std::chrono::high_resolution_clock::now();
+    
+    long double copy_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    copy_time *= 1e-6;
 
-//     std::cout << "Strongly Connected Components: ";
-//     for (int i = 0; i < numNodes; ++i) {
-//         if (h_StrongCompSet[i] == 1) {
-//             std::cout << i << " ";
-//         }
-//     }
-//     std::cout << std::endl;
+    start = std::chrono::high_resolution_clock::now();
 
-//     return 0;
-// }
+    Parallel_SCC_CSR(d_rowPtr, d_colInd, d_P, StrongCompSet, numNodes);
+    CUDA_CALL(cudaDeviceSynchronize());
+
+    end = std::chrono::high_resolution_clock::now();
+
+    long double running_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    running_time *= 1e-6;
+
+    // thrust::host_vector<int> h_StrongCompSet = StrongCompSet;
+
+    // std::cout << "Strongly Connected Components: ";
+    // for (int i = 0; i < numNodes; ++i) {
+    //     if (h_StrongCompSet[i] == 1) {
+    //         std::cout << i << " ";
+    //     }
+    // }
+    // std::cout << std::endl;
+
+    // Print Statistics
+    std::cout << "\n";
+    std::cout << "Copy Time : " << copy_time << " ms\n";
+    std::cout << "Running Time : " << running_time << " ms\n";
+    std::cout << "\n";
+}
+
+
+#endif

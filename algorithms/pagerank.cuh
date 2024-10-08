@@ -1,62 +1,18 @@
+#ifndef PAGERANK_CUH
+#define PAGERANK_CUH
+
+
 #include <iostream>
 #include <vector>
 #include <cuda_runtime.h>
 #include <sstream>
 #include <fstream>
+#include <chrono>
 
 #define BLOCK_SIZE 256
 #define EPSILON 1e-6
 #define DAMPING_FACTOR 0.85
 #define MAX_ITER 10
-
-void read_market_file(const std::string &filename, std::vector<int> &src, std::vector<int> &dst, int &numNodes) {
-    std::ifstream infile(filename);
-    std::string line;
-    bool isDirected = true;
-
-    if (!infile.is_open()) {
-        std::cerr << "Error opening file: " << filename << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-    // Parse the header
-    std::getline(infile, line);  // Skip MatrixMarket header line
-    std::getline(infile, line);  // Skip kind: undirected graph line
-    
-    if(line.find("undirected") != std::string::npos){
-        isDirected = false;
-    }
-
-    // Read the dimensions of the graph
-    std::getline(infile, line);
-    int numEdges;
-    std::stringstream ss(line);
-    ss >> numNodes >> numNodes >> numEdges;
-
-    // Reserve space for edges
-    if(!isDirected){
-        src.reserve(2*numEdges);
-        dst.reserve(2*numEdges);
-    }
-
-    while (std::getline(infile, line)) {
-        std::stringstream ss(line);
-        int u, v;
-        ss >> u >> v;
-        
-        // Convert 1-based to 0-based index
-        u--;
-        v--;
-
-        src.push_back(u);
-        dst.push_back(v);
-        if (!isDirected and u != v) {  // Avoid adding self-loops twice
-            src.push_back(v);
-            dst.push_back(u);
-        }
-    }
-    infile.close();
-}
 
 __global__ void computeOutbound(int *src, int *outbound, int numEdges){
     int idx = threadIdx.x + blockIdx.x * blockDim.x;
@@ -87,27 +43,14 @@ __global__ void applyDampingFactorKernel(float *new_rank, float *rank, int numNo
     }
 }
 
-int main(int argc, char **argv) {
-    // Graph initialization
-     if (argc != 2) {
-        std::cerr << "Usage: " << argv[0] << " <market_file>" << std::endl;
-        return EXIT_FAILURE;
-    }
-
-    std::string filename = argv[1];
-
-    std::vector<int> h_src;
-    std::vector<int> h_dest;
-    
-    int numNodes = 0;
-
-    read_market_file(filename, h_src, h_dest, numNodes);
-    int numEdges = h_src.size();
+int pagerank(int *src, int *dest, size_t numNodes, size_t numEdges) {
 
     // Host variables
     std::vector<float> h_rank(numNodes, 1.0f / numNodes);
     std::vector<float> h_newRank(numNodes, 0.0f);
     
+
+    auto start = std::chrono::high_resolution_clock::now(); // for timing
 
     // Device variables
     int *d_src, *d_dest, *d_outbound;
@@ -119,12 +62,19 @@ int main(int argc, char **argv) {
     cudaMalloc(&d_diff, sizeof(float));
     cudaMalloc(&d_outbound, numNodes * sizeof(float));
 
-    cudaMemcpy(d_src, h_src.data(), numEdges * sizeof(int), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_dest, h_dest.data(), numEdges * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_src, src, numEdges * sizeof(int), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_dest, dest, numEdges * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(d_rank, h_rank.data(), numNodes * sizeof(float), cudaMemcpyHostToDevice);
     // cudaMemcpy(d_newRank, h_newRank.data(), numNodes * sizeof(float), cudaMemcpyHostToDevice);
 
+    auto end = std::chrono::high_resolution_clock::now();
+    
+    long double copy_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    copy_time *= 1e-6;
+
     int numBlocks = (numEdges + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+    start = std::chrono::high_resolution_clock::now();
 
     // Preprocess for outbound computation
     cudaMemset(d_outbound, 0, numNodes * sizeof(int));
@@ -148,13 +98,27 @@ int main(int argc, char **argv) {
         iter++;
     }
 
-    cudaMemcpy(h_rank.data(), d_rank, numNodes * sizeof(float), cudaMemcpyDeviceToHost);
+    cudaDeviceSynchronize();
+    end = std::chrono::high_resolution_clock::now();
 
-    long long N = numNodes > 40 ? 40 : numNodes;
-    // Output the PageRank values
-    for (int i = 0; i < N; ++i) {
-        std::cout << "Node " << i << " PageRank: " << h_rank[i] << std::endl;
-    }
+    long double running_time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    running_time *= 1e-6;
+
+    // cudaMemcpy(h_rank.data(), d_rank, numNodes * sizeof(float), cudaMemcpyDeviceToHost);
+
+    // long long N = numNodes > 40 ? 40 : numNodes;
+    // // Output the PageRank values
+    // for (int i = 0; i < N; ++i) {
+    //     std::cout << h_rank[i] << " ";
+    // }
+    // std::cout << "\n";
+
+
+     // Print Statistics
+    std::cout << "\n";
+    std::cout << "Copy Time : " << copy_time << " ms\n";
+    std::cout << "Running Time : " << running_time << " ms\n";
+    std::cout << "\n";
 
     // Clean up
     cudaFree(d_src);
@@ -164,3 +128,5 @@ int main(int argc, char **argv) {
 
     return 0;
 }
+
+#endif

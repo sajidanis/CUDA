@@ -1,0 +1,18 @@
+
+[+] Available device Id is : 0 with available memory : 3983 MB
+
+[+] Setting the GPU 0
+
+[+] Reading the market file :../graphs/co-papers-citeseer.mtx
+434102 32073440
+[+] Time taken to read the market file : 7367.68 ms
+[+] Time taken to convert the coo format to csr : 376.093 ms
+
+
+
+Copy Time : 15.2638 ms
+Init Time : 1043.12 ms
+Sync Time : 19.4837 ms
+Dyn Update Time : 0.917358 ms
+Static Update Time : 1042.83 ms
+Mean Absolute Error (MAE): 2.30329e-06

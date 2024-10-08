@@ -1,0 +1,18 @@
+
+[+] Available device Id is : 0 with available memory : 3983 MB
+
+[+] Setting the GPU 0
+
+[+] Reading the market file :../graphs/channel-500x100x100-b050.mtx
+4802000 85362744
+[+] Time taken to read the market file : 20753.1 ms
+[+] Time taken to convert the coo format to csr : 1000.89 ms
+
+
+
+Copy Time : 42.253 ms
+Init Time : 970.035 ms
+Sync Time : 51.4937 ms
+Dyn Update Time : 3.69788 ms
+Static Update Time : 966.248 ms
+Mean Absolute Error (MAE): 2.08244e-07

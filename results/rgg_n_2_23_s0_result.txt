@@ -1,0 +1,18 @@
+
+[+] Available device Id is : 0 with available memory : 3983 MB
+
+[+] Setting the GPU 0
+
+[+] Reading the market file :../graphs/rgg_n_2_23_s0.mtx
+8388608 127002786
+[+] Time taken to read the market file : 30950.1 ms
+[+] Time taken to convert the coo format to csr : 1547.2 ms
+
+
+
+Copy Time : 64.9518 ms
+Init Time : 3964.58 ms
+Sync Time : 86.6297 ms
+Dyn Update Time : 20.4078 ms
+Static Update Time : 3959.47 ms
+Mean Absolute Error (MAE): 1.19208e-07

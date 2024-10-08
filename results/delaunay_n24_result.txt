@@ -1,0 +1,18 @@
+
+[+] Available device Id is : 0 with available memory : 3983 MB
+
+[+] Setting the GPU 0
+
+[+] Reading the market file :../graphs/delaunay_n24.mtx
+16777216 100663202
+[+] Time taken to read the market file : 25089.4 ms
+[+] Time taken to convert the coo format to csr : 1274.84 ms
+
+
+
+Copy Time : 55.2584 ms
+Init Time : 2134.68 ms
+Sync Time : 66.5146 ms
+Dyn Update Time : 36.5646 ms
+Static Update Time : 2132.58 ms
+Mean Absolute Error (MAE): 5.96044e-08

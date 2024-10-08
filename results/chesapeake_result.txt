@@ -1,0 +1,18 @@
+
+[+] Available device Id is : 0 with available memory : 3983 MB
+
+[+] Setting the GPU 0
+
+[+] Reading the market file :../graphs/chesapeake.mtx
+39 340
+[+] Time taken to read the market file : 0.114354 ms
+[+] Time taken to convert the coo format to csr : 1.84866 ms
+
+
+
+Copy Time : 0.012236 ms
+Init Time : 1.97009 ms
+Sync Time : 0.01695 ms
+Dyn Update Time : 0.09405 ms
+Static Update Time : 1.9249 ms
+Mean Absolute Error (MAE): 0.00632905
