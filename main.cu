@@ -9,9 +9,10 @@
 #include "gpu.cuh"
 // #include "bfs.cuh"
 // #include "color.cuh"
-#include "pagerank.cuh"
+// #include "pagerank.cuh"
 // #include "sssp.cuh"
-#include "aggregate_pr.cuh"
+// #include "aggregate_pr.cuh"
+#include "tc.cuh"
 
 using namespace std;
 
@@ -40,6 +41,8 @@ int main(int argc, char **argv){
 
     size_t numNodes = csr.nodes;
 
+    triangleCount(csr.offsets.data(), csr.columnIndices.data(), numNodes);
+
     // // Betweenness Centrality
     // betweennessCentrality(csr.offsets.data(), csr.columnIndices.data(), csr.nodes, csr.edges);
 
@@ -59,10 +62,10 @@ int main(int argc, char **argv){
 
     // cout << "\n";
 
-    cout << "[+] PR -> \n";
-    pagerank(coo.src.data(), coo.dest.data(), coo.nodes, coo.edges);
+    // cout << "[+] PR -> \n";
+    // pagerank(coo.src.data(), coo.dest.data(), coo.nodes, coo.edges);
 
-    cout << "\n";
+    // cout << "\n";
 
     // cout << "[+] SCC -> \n";
     // strongly_connected(csr.offsets, csr.columnIndices, numNodes);

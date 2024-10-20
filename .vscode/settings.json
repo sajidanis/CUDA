@@ -50,6 +50,15 @@
         "stdexcept": "cpp",
         "streambuf": "cpp",
         "typeinfo": "cpp",
-        "map": "cpp"
+        "map": "cpp",
+        "bitset": "cpp",
+        "cstring": "cpp",
+        "mutex": "cpp",
+        "thread": "cpp",
+        "condition_variable": "cpp",
+        "set": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp",
+        "__nullptr": "cpp"
     }
 }

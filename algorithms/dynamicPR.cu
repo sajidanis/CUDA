@@ -157,6 +157,8 @@ int main() {
     regenerateWalks<<<(N + 255) / 256, 256>>>(d_state, d_csrRowPtr, d_csrColIdx, d_walkSet, d_walkLabels, N, u, v, maxWalkLength);
     cudaDeviceSynchronize();
 
+    
+
     // Clean up
     cudaFree(d_csrRowPtr);
     cudaFree(d_csrColIdx);
